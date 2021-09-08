@@ -81,29 +81,25 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
   
   # remove the cheapest frontier
   frontierList <- frontierList[-best_index]
+  up <- findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0, 1, 0, 0)  #up
+  right <- findNeighbor(expandedFrontier, trafficMatrix, frontierList, 1, 0, 0, 0)  #right
+  down <- findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0, -1, 0, -1) #down
+  left <- findNeighbor(expandedFrontier, trafficMatrix, frontierList, -1, 0, -1, 0) #left
+  
+  print(up)
+  if(isInsideGame(up, trafficMatrix)) frontierList <- append(frontierList, list(up))
+  if(isInsideGame(right, trafficMatrix)) frontierList <- append(frontierList, list(right))
+  if(isInsideGame(down, trafficMatrix)) frontierList <- append(frontierList, list(down))
+  if(isInsideGame(left, trafficMatrix)) frontierList <- append(frontierList, list(left))
+  
+  str(frontierList)
   
   # Step 1: Get neighbors
   # Todo: Check if neighbor is in grid!
   
   # up-neighbor
-  newX <- expandedFrontier$x
-  newY <- expandedFrontier$y + 1
-  newG <-
-    expandedFrontier$g + trafficMatrix$vroads[expandedFrontier$x, expandedFrontier$y]
-  newH <- 0
-  newF <- newG + newH
-  newpath <- append(expandedFrontier$path,
-                    list(c(newX, newY)))
-  newNode <- list(x <- newX,
-                  y <- newY,
-                  g <- newG,
-                  h <- newH,
-                  f <- newF,
-                  path <- newpath)
   
-  frontierList <- append(frontierList,
-                         list(newNode))
-  str(frontierList)
+  
   
   
   # right-neighbora
@@ -111,5 +107,34 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
   #create frpmtoer --> add own costs to the  frontier cost
   # + also include path in array
   # 3. return cheap path (next step)
+}
+isInsideGame <- function(node, trafficMatrix) {
+  print(node)
+  dim <- NCOL(trafficMatrix$hroads)
+  if(node$x > 0 & node$x <= dim & node$y > 0 & node$y <= dim){
+    return (TRUE)
+  }
+  return (FALSE)
+}
+findNeighbor <- function(expandedFrontier, trafficMatrix, frontierList, offsetX, offsetY, edgeOffsetX, edgeOffsetY) {
+  newX <- expandedFrontier$x + offsetX
+  newY <- expandedFrontier$y + offsetY
   
+  ## If x == 0 then we know that we look only up/down (a bit hacky)
+  if(offsetX == 0) {
+    newG <- expandedFrontier$g + trafficMatrix$vroads[expandedFrontier$x, expandedFrontier$y + edgeOffsetY]  
+  } else {
+    newG <- expandedFrontier$g + trafficMatrix$hroads[expandedFrontier$x + edgeOffsetX, expandedFrontier$y]  
+  }
+  
+  newH <- 0
+  newF <- newG + newH
+  newpath <- append(expandedFrontier$path,
+                    list(c(newX, newY)))
+  return (newNode <- list(x <- newX,
+                  y <- newY,
+                  g <- newG,
+                  h <- newH,
+                  f <- newF,
+                  path <- newpath))
 }
