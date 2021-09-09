@@ -41,7 +41,8 @@ nextPickup <- function(trafficMatrix, carInfo, packageMatrix) {
 # Find the move to get to carInfo$mem$goal
 nextMove <- function(trafficMatrix, carInfo, packageMatrix) {
   destination <- c(carInfo$mem$goal[1], carInfo$mem$goal[2])
-  return (calcAstar(carInfo, destination, trafficMatrix))
+  nextCoordinates <- calcAstar(carInfo, destination, trafficMatrix)
+  ## if(carX - destX != 0)
 }
 
 
@@ -80,7 +81,12 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
     expandedFrontier <- frontierList[[best_index]]
     frontierList <- frontierList[-best_index]
     
-    if(expandedFrontier[[4]] == 0) return (8)
+
+    if(expandedFrontier[[4]] == 0) {
+      #print(dest)
+      str()
+      return (expandedFrontier[[6]][[2]])
+    }
     
     up <-
       findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0, 1, 0, 0,  dest)  #up
