@@ -50,12 +50,20 @@ nextMove <- function(trafficMatrix, carInfo, packageMatrix) {
   y = carInfo$y
   
 
-  if(x-a == 0 && y-b == -1) return (8) #up
-  if(x-a == -1 && y-b == 0) return (6) #right
-  if(x-a == 0 && y-b == 1) return (2) #down
-  if(x-a == 1 && y-b == 0) return (4) #left
+  if(x-a == 0 && y-b == -1) {return (8)} #up
+  else if(x-a == -1 && y-b == 0) {return (6)} #right
+  else if(x-a == 0 && y-b == 1) {return (2)} #down
+  else if(x-a == 1 && y-b == 0) {return (4)} #left
   
-  return(5) # on dest: wait
+  else if(x-a == 0 && y-b == 0) { #wait
+    print("waiting")
+    return (5)
+    } # on dest: wait
+  else {
+    print("ERROR")
+    print(x-a)
+    print(y-b)
+  }
 }
 
 
@@ -85,6 +93,7 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
 
   ## --- Loop here ---
   while (length(frontierList) != 0) {
+    print(length(frontierList))
     ## Find best score in frontiers
     scores <- sapply(frontierList, function(item)
       (item[[5]]))
@@ -94,12 +103,8 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
     expandedFrontier <- frontierList[[best_index]]
     frontierList <- frontierList[-best_index]
     
-
+    #if found the dest, return first node in path
     if(expandedFrontier[[4]] == 0) {
-      #print(dest)
-      
-
-      
       return (expandedFrontier[[6]][[1]])
     }
     
@@ -138,6 +143,7 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
     
     
   }
+  print("outside loop")
   return (5)
 }
 
