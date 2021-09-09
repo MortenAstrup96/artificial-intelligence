@@ -42,7 +42,20 @@ nextPickup <- function(trafficMatrix, carInfo, packageMatrix) {
 nextMove <- function(trafficMatrix, carInfo, packageMatrix) {
   destination <- c(carInfo$mem$goal[1], carInfo$mem$goal[2])
   nextCoordinates <- calcAstar(carInfo, destination, trafficMatrix)
-  ## if(carX - destX != 0)
+  
+  a = nextCoordinates[1]
+  b = nextCoordinates[2]
+  
+  x = carInfo$x
+  y = carInfo$y
+  
+
+  if(x-a == 0 && y-b == -1) return (8) #up
+  if(x-a == -1 && y-b == 0) return (6) #right
+  if(x-a == 0 && y-b == 1) return (2) #down
+  if(x-a == 1 && y-b == 0) return (4) #left
+  
+  return(5) # on dest: wait
 }
 
 
@@ -84,29 +97,41 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
 
     if(expandedFrontier[[4]] == 0) {
       #print(dest)
-      str()
-      return (expandedFrontier[[6]][[2]])
+      
+
+      
+      return (expandedFrontier[[6]][[1]])
     }
     
-    up <-
-      findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0, 1, 0, 0,  dest)  #up
-    right <-
-      findNeighbor(expandedFrontier, trafficMatrix, frontierList, 1, 0, 0, 0, dest)  #right
-    down <-
-      findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0,-1, 0,-1, dest) #down
-    left <-
-      findNeighbor(expandedFrontier, trafficMatrix, frontierList,-1, 0,-1, 0, dest) #left
     
     
-    if (isInsideGame(up, trafficMatrix))
-      frontierList <- append(frontierList, list(up))
-    if (isInsideGame(right, trafficMatrix))
+    if(isInsideGame2(expandedFrontier,0,1,trafficMatrix)) {
+      up <-
+        findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0, 1, 0, 0,  dest)  #up
+        frontierList <- append(frontierList, list(up))
+    }
+    
+    if(isInsideGame2(expandedFrontier,1,0,trafficMatrix)) {
+      right <-
+        findNeighbor(expandedFrontier, trafficMatrix, frontierList, 1, 0, 0, 0, dest)  #right
       frontierList <- append(frontierList, list(right))
-    if (isInsideGame(down, trafficMatrix))
+      
+    }
+    if(isInsideGame2(expandedFrontier,0,-1,trafficMatrix)) {
+      down <-
+        findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0,-1, 0,-1, dest) #down
       frontierList <- append(frontierList, list(down))
-    if (isInsideGame(left, trafficMatrix))
-      frontierList <- append(frontierList, list(left))
+      
+    }
     
+    if(isInsideGame2(expandedFrontier,-1,0,trafficMatrix)) {
+      left <-
+        findNeighbor(expandedFrontier, trafficMatrix, frontierList,-1, 0,-1, 0, dest) #left
+      frontierList <- append(frontierList, list(left))
+      
+    }
+
+
     #create frpmtoer --> add own costs to the  frontier cost
     # + also include path in array
     # 3. return cheap path (next step)
@@ -116,19 +141,19 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
   return (5)
 }
 
+isInsideGame2 <- function(node, offsetX, offsetY, trafficMatrix) {
+  dim <- NCOL(trafficMatrix$hroads)
+  if ((node[[1]]+offsetX > 0 &&
+       node[[1]]+offsetX <= dim) && (node[[2]]+offsetY > 0 && node[[2]]+offsetY <= dim)) {
+    return (TRUE)
+  }
+  return (FALSE)
+}
 
 calcManhattanDist <- function(a, b, x, y) {
   return(abs(x-a)+abs(y-b))
 }
 
-isInsideGame <- function(node, trafficMatrix) {
-  dim <- NCOL(trafficMatrix$hroads)
-  if ((node[[1]] > 0 &&
-       node[[1]] <= dim) && (node[[2]] > 0 && node[[2]] <= dim)) {
-    return (TRUE)
-  }
-  return (FALSE)
-}
 
 findNeighbor <-
   function(expandedFrontier,
@@ -144,6 +169,7 @@ findNeighbor <-
     newY <- expandedFrontier[[2]] + offsetY
     
     ## If x == 0 then we know that we look only up/down (a bit hacky)
+
     if (offsetX == 0) {
       newG <-
         expandedFrontier[[3]] + trafficMatrix$vroads[expandedFrontier[[1]], expandedFrontier[[2]] + edgeOffsetY]
