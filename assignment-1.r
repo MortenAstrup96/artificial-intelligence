@@ -50,6 +50,7 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
   frontierList <- list()
   
   
+  manhattan <- calcManhattanDist(carInfo$x, carInfo$y, dest[1], dest[2])
   # Step -1: put first frontier (your position) to queue
   firstNode <- list(
     x = carInfo$x,
@@ -58,84 +59,100 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
     # pos y
     g = 0,
     # Edge Cost
-    h = 0,
+    h = manhattan,
     # Manhattan Cost
-    f = 0,
+    f = manhattan,
     # Total Cost (Score)
     path = list()
   ) # Next move (Vector in the list))
   
   frontierList <- append(frontierList,
                          list(firstNode))
-  # loop (A* Algorithm)
-  
-  
-  # Step 0. Find cheapest frontier
-  scores <- sapply(frontierList, function(item)
-    (item$f))
-  best_index <- which.min(scores)
-  
-  # get cheapest frontier out of the list
-  expandedFrontier <- frontierList[[best_index]]
-  frontierList <- frontierList[-best_index]
-  
-  
+
   ## --- Loop here ---
-  up <- findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0, 1, 0, 0)  #up
-  right <- findNeighbor(expandedFrontier, trafficMatrix, frontierList, 1, 0, 0, 0)  #right
-  down <- findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0, -1, 0, -1) #down
-  left <- findNeighbor(expandedFrontier, trafficMatrix, frontierList, -1, 0, -1, 0) #left
-  
-  
-  if(isInsideGame(up, trafficMatrix)) frontierList <- append(frontierList, list(up))
-  if(isInsideGame(right, trafficMatrix)) frontierList <- append(frontierList, list(right))
-  if(isInsideGame(down, trafficMatrix)) frontierList <- append(frontierList, list(down))
-  if(isInsideGame(left, trafficMatrix)) frontierList <- append(frontierList, list(left))
-  
-  ## Find best score in frontiers
-  scores <- sapply(frontierList, function(item)
-    (item[[5]]))
-  best_index <- which.min(scores)
-  
-  ## Pop best node from frontierlist
-  expandedFrontier <- frontierList[[best_index]]
-  frontierList <- frontierList[-best_index]
-  
-  str(expandedFrontier)
-  
-  #create frpmtoer --> add own costs to the  frontier cost
-  # + also include path in array
-  # 3. return cheap path (next step)
-  
+  while (length(frontierList) != 0) {
+    ## Find best score in frontiers
+    scores <- sapply(frontierList, function(item)
+      (item[[5]]))
+    best_index <- which.min(scores)
+    
+    ## Pop best node from frontierlist
+    expandedFrontier <- frontierList[[best_index]]
+    frontierList <- frontierList[-best_index]
+    
+    if(expandedFrontier[[4]] == 0) return (8)
+    
+    up <-
+      findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0, 1, 0, 0,  dest)  #up
+    right <-
+      findNeighbor(expandedFrontier, trafficMatrix, frontierList, 1, 0, 0, 0, dest)  #right
+    down <-
+      findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0,-1, 0,-1, dest) #down
+    left <-
+      findNeighbor(expandedFrontier, trafficMatrix, frontierList,-1, 0,-1, 0, dest) #left
+    
+    
+    if (isInsideGame(up, trafficMatrix))
+      frontierList <- append(frontierList, list(up))
+    if (isInsideGame(right, trafficMatrix))
+      frontierList <- append(frontierList, list(right))
+    if (isInsideGame(down, trafficMatrix))
+      frontierList <- append(frontierList, list(down))
+    if (isInsideGame(left, trafficMatrix))
+      frontierList <- append(frontierList, list(left))
+    
+    #create frpmtoer --> add own costs to the  frontier cost
+    # + also include path in array
+    # 3. return cheap path (next step)
+    
+    
+  }
   return (5)
+}
+
+
+calcManhattanDist <- function(a, b, x, y) {
+  return(abs(x-a)+abs(y-b))
 }
 
 isInsideGame <- function(node, trafficMatrix) {
   dim <- NCOL(trafficMatrix$hroads)
-  if((node[[1]] > 0 && node[[1]] <= dim) && (node[[2]] > 0 && node[[2]] <= dim)) {
+  if ((node[[1]] > 0 &&
+       node[[1]] <= dim) && (node[[2]] > 0 && node[[2]] <= dim)) {
     return (TRUE)
   }
   return (FALSE)
 }
 
-findNeighbor <- function(expandedFrontier, trafficMatrix, frontierList, offsetX, offsetY, edgeOffsetX, edgeOffsetY) {
-  newX <- expandedFrontier[[1]] + offsetX
-  newY <- expandedFrontier[[2]] + offsetY
-  
-  ## If x == 0 then we know that we look only up/down (a bit hacky)
-  if(offsetX == 0) {
-    newG <- expandedFrontier[[3]] + trafficMatrix$vroads[expandedFrontier[[1]], expandedFrontier[[2]] + edgeOffsetY]  
-  } else {
-    newG <- expandedFrontier[[3]] + trafficMatrix$hroads[expandedFrontier[[1]] + edgeOffsetX, expandedFrontier[[2]]]  
+findNeighbor <-
+  function(expandedFrontier,
+           trafficMatrix,
+           frontierList,
+           offsetX,
+           offsetY,
+           edgeOffsetX,
+           edgeOffsetY,
+           dest
+           ) {
+    newX <- expandedFrontier[[1]] + offsetX
+    newY <- expandedFrontier[[2]] + offsetY
+    
+    ## If x == 0 then we know that we look only up/down (a bit hacky)
+    if (offsetX == 0) {
+      newG <-
+        expandedFrontier[[3]] + trafficMatrix$vroads[expandedFrontier[[1]], expandedFrontier[[2]] + edgeOffsetY]
+    } else {
+      newG <-
+        expandedFrontier[[3]] + trafficMatrix$hroads[expandedFrontier[[1]] + edgeOffsetX, expandedFrontier[[2]]]
+    }
+    newH <- calcManhattanDist(newX, newY, dest[1], dest[2])
+    newF <- newG + newH
+    newpath <- append(expandedFrontier[[6]], list(c(newX, newY)))
+    newNode <- list(x <- newX, #1
+                    y <- newY, #2
+                    g <- newG, #3
+                    h <- newH, #4
+                    f <- newF, #5
+                    path <- newpath) #6
+    return (newNode)
   }
-  newH <- 0
-  newF <- newG + newH
-  newpath <- append(expandedFrontier[[6]], list(c(newX, newY)))
-  newNode <- list(x <- newX, #1
-                  y <- newY, #2
-                  g <- newG, #3
-                  h <- newH, #4
-                  f <- newF, #5
-                  path <- newpath) #6
-  return (newNode)
-}
