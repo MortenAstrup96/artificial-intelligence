@@ -41,8 +41,7 @@ nextPickup <- function(trafficMatrix, carInfo, packageMatrix) {
 # Find the move to get to carInfo$mem$goal
 nextMove <- function(trafficMatrix, carInfo, packageMatrix) {
   destination <- c(carInfo$mem$goal[1], carInfo$mem$goal[2])
-  calcAstar(carInfo, destination, trafficMatrix)
-  return(5)
+  return (calcAstar(carInfo, destination, trafficMatrix))
 }
 
 
@@ -78,63 +77,65 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
   
   # get cheapest frontier out of the list
   expandedFrontier <- frontierList[[best_index]]
-  
-  # remove the cheapest frontier
   frontierList <- frontierList[-best_index]
+  
+  
+  ## --- Loop here ---
   up <- findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0, 1, 0, 0)  #up
   right <- findNeighbor(expandedFrontier, trafficMatrix, frontierList, 1, 0, 0, 0)  #right
   down <- findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0, -1, 0, -1) #down
   left <- findNeighbor(expandedFrontier, trafficMatrix, frontierList, -1, 0, -1, 0) #left
   
-  print(up)
+  
   if(isInsideGame(up, trafficMatrix)) frontierList <- append(frontierList, list(up))
   if(isInsideGame(right, trafficMatrix)) frontierList <- append(frontierList, list(right))
   if(isInsideGame(down, trafficMatrix)) frontierList <- append(frontierList, list(down))
   if(isInsideGame(left, trafficMatrix)) frontierList <- append(frontierList, list(left))
   
-  str(frontierList)
+  ## Find best score in frontiers
+  scores <- sapply(frontierList, function(item)
+    (item[[5]]))
+  best_index <- which.min(scores)
   
-  # Step 1: Get neighbors
-  # Todo: Check if neighbor is in grid!
+  ## Pop best node from frontierlist
+  expandedFrontier <- frontierList[[best_index]]
+  frontierList <- frontierList[-best_index]
   
-  # up-neighbor
+  str(expandedFrontier)
   
-  
-  
-  
-  # right-neighbora
-  #
   #create frpmtoer --> add own costs to the  frontier cost
   # + also include path in array
   # 3. return cheap path (next step)
+  
+  return (5)
 }
+
 isInsideGame <- function(node, trafficMatrix) {
-  print(node)
   dim <- NCOL(trafficMatrix$hroads)
-  if(node$x > 0 & node$x <= dim & node$y > 0 & node$y <= dim){
+  if((node[[1]] > 0 && node[[1]] <= dim) && (node[[2]] > 0 && node[[2]] <= dim)) {
     return (TRUE)
   }
   return (FALSE)
 }
+
 findNeighbor <- function(expandedFrontier, trafficMatrix, frontierList, offsetX, offsetY, edgeOffsetX, edgeOffsetY) {
-  newX <- expandedFrontier$x + offsetX
-  newY <- expandedFrontier$y + offsetY
+  newX <- expandedFrontier[[1]] + offsetX
+  newY <- expandedFrontier[[2]] + offsetY
   
   ## If x == 0 then we know that we look only up/down (a bit hacky)
   if(offsetX == 0) {
-    newG <- expandedFrontier$g + trafficMatrix$vroads[expandedFrontier$x, expandedFrontier$y + edgeOffsetY]  
+    newG <- expandedFrontier[[3]] + trafficMatrix$vroads[expandedFrontier[[1]], expandedFrontier[[2]] + edgeOffsetY]  
   } else {
-    newG <- expandedFrontier$g + trafficMatrix$hroads[expandedFrontier$x + edgeOffsetX, expandedFrontier$y]  
+    newG <- expandedFrontier[[3]] + trafficMatrix$hroads[expandedFrontier[[1]] + edgeOffsetX, expandedFrontier[[2]]]  
   }
-  
   newH <- 0
   newF <- newG + newH
-  newpath <- append(expandedFrontier$path,
-                    list(c(newX, newY)))
-  return (newNode <- list(x <- newX,
-                  y <- newY,
-                  g <- newG,
-                  h <- newH,
-                  f <- newF,
-                  path <- newpath))
+  newpath <- append(expandedFrontier[[6]], list(c(newX, newY)))
+  newNode <- list(x <- newX, #1
+                  y <- newY, #2
+                  g <- newG, #3
+                  h <- newH, #4
+                  f <- newF, #5
+                  path <- newpath) #6
+  return (newNode)
 }
