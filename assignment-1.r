@@ -12,6 +12,7 @@ library("DeliveryMan")
 # Read documentation
 # ?runDeliveryMan
 # ?testDM
+waitCounter <- 0
 
 myFunction <- function(trafficMatrix, carInfo, packageMatrix) {
   # What is our goal?
@@ -55,15 +56,13 @@ nextMove <- function(trafficMatrix, carInfo, packageMatrix) {
   else if(x-a == 0 && y-b == 1) {return (2)} #down
   else if(x-a == 1 && y-b == 0) {return (4)} #left
   
-  else if(x-a == 0 && y-b == 0) { #wait
-    print("waiting")
+  else if(x-a == 0 && y-b == 0) {
+    waitCounter <- waitCounter + 1
+    print("wait")
+    print(waitCounter)
     return (5)
-    } # on dest: wait
-  else {
-    print("ERROR")
-    print(x-a)
-    print(y-b)
-  }
+    }
+    
 }
 
 
@@ -87,8 +86,7 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
     path = list()
   ) # Next move (Vector in the list))
   
-  frontierList <- append(frontierList,
-                         list(firstNode))
+  frontierList <- append(frontierList, list(firstNode))
 
   ## --- Loop here ---
   while (length(frontierList) != 0) {
@@ -98,13 +96,22 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
       (item[[5]]))
     best_index <- which.min(scores)
     
+    ## Finding nodes that are equal in travel cost bust cheaper in manhattan cost
+    potentialExpantionNode <- frontierList[[best_index]]
+    for(node in frontierList) {
+      if(node[[5]] == potentialExpantionNode[[5]] && node[[3]] < potentialExpantionNode[[3]]) {
+        potentialExpantionNode <- node
+      }
+    }
+    
     ## Pop best node from frontierlist
-    expandedFrontier <- frontierList[[best_index]]
+    expandedFrontier <- potentialExpantionNode
     frontierList <- frontierList[-best_index]
     
     #if found the dest, return first node in path
     if(expandedFrontier[[4]] == 0) {
-      if(length(expandedFrontier[[6]]) > 2) return (expandedFrontier[[6]][[1]]) 
+      if(length(expandedFrontier[[6]]) < 1) return (c(carInfo$x, carInfo$y)) # Coordinates of current car
+        return (expandedFrontier[[6]][[1]]) 
     }
     
     
@@ -155,6 +162,7 @@ isInsideGame2 <- function(node, offsetX, offsetY, trafficMatrix) {
   return (FALSE)
 }
 
+## To optimise: Create a table with all manhattan distances at start of program
 calcManhattanDist <- function(a, b, x, y) {
   return(abs(x-a)+abs(y-b))
 }
@@ -173,6 +181,7 @@ findNeighbor <-
     newX <- expandedFrontier[[1]] + offsetX
     newY <- expandedFrontier[[2]] + offsetY
     
+    ## Check if this neighbor is already in frontierList - Return null if it is
     for(item in frontierList) {
       if((newX == item[[1]]) && (newY == item[[2]])) {
         return (NULL)
