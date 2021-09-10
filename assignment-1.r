@@ -70,8 +70,7 @@ nextMove <- function(trafficMatrix, carInfo, packageMatrix) {
 calcAstar <- function(carInfo, dest, trafficMatrix) {
   # 1. fronttier queue
   frontierList <- list()
-  
-  
+
   manhattan <- calcManhattanDist(carInfo$x, carInfo$y, dest[1], dest[2])
   # Step -1: put first frontier (your position) to queue
   firstNode <- list(
@@ -141,12 +140,6 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
       frontierList <- append(frontierList, list(left))
       }
     }
-
-
-    #create frpmtoer --> add own costs to the  frontier cost
-    # + also include path in array
-    # 3. return cheap path (next step)
-    
     
   }
   #print("outside loop")
@@ -195,7 +188,7 @@ findNeighbor <-
         expandedFrontier[[3]] + trafficMatrix$hroads[expandedFrontier[[1]] + edgeOffsetX, expandedFrontier[[2]]]
     }
     newH <- calcManhattanDist(newX, newY, dest[1], dest[2])
-    newF <- newG + (2* newH)
+    newF <- newG + newH
     newpath <- append(expandedFrontier[[6]], list(c(newX, newY)))
     newNode <- list(x <- newX, #1
                     y <- newY, #2
