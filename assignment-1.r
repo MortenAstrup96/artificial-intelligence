@@ -90,22 +90,34 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
   
   frontierList <- append(frontierList,
                          list(firstNode))
-
+  endLoop = FALSE
   ## --- Loop here ---
   while (length(frontierList) != 0) {
-    print(length(frontierList))
+    #print(length(frontierList))
+    #print("€")
+    
     ## Find best score in frontiers
-    scores <- sapply(frontierList, function(item)
-      (item[[5]]))
-    best_index <- which.min(scores)
+
+      
+      scores <- sapply(frontierList, function(item)
+        (item[[5]]))
+      best_index <- which.min(scores)
+      
+
+      ## Pop best node from frontierlist
+      expandedFrontier <- frontierList[[best_index]]
+      frontierList <- frontierList[-best_index]
+      
+
     
-    ## Pop best node from frontierlist
-    expandedFrontier <- frontierList[[best_index]]
-    frontierList <- frontierList[-best_index]
-    
+    #print(expandedFrontier[[4]])
     #if found the dest, return first node in path
     if(expandedFrontier[[4]] == 0) {
-      return (expandedFrontier[[6]][[1]])
+
+      if(length(expandedFrontier[[6]])>2) {
+        return (expandedFrontier[[6]][[1]])
+        
+      } 
     }
     
     
@@ -113,26 +125,37 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
     if(isInsideGame2(expandedFrontier,0,1,trafficMatrix)) {
       up <-
         findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0, 1, 0, 0,  dest)  #up
+      if(!isAlreadyInList(up,frontierList)) {
+        
         frontierList <- append(frontierList, list(up))
+      }
     }
     
     if(isInsideGame2(expandedFrontier,1,0,trafficMatrix)) {
       right <-
         findNeighbor(expandedFrontier, trafficMatrix, frontierList, 1, 0, 0, 0, dest)  #right
+      if(!isAlreadyInList(right,frontierList)) {
+        
       frontierList <- append(frontierList, list(right))
+      }
       
     }
     if(isInsideGame2(expandedFrontier,0,-1,trafficMatrix)) {
       down <-
         findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0,-1, 0,-1, dest) #down
+      if(!isAlreadyInList(down,frontierList)) {
+        
       frontierList <- append(frontierList, list(down))
+      }
       
     }
     
     if(isInsideGame2(expandedFrontier,-1,0,trafficMatrix)) {
       left <-
         findNeighbor(expandedFrontier, trafficMatrix, frontierList,-1, 0,-1, 0, dest) #left
-      frontierList <- append(frontierList, list(left))
+      if(!isAlreadyInList(left,frontierList)) {
+        frontierList <- append(frontierList, list(left))
+      }
       
     }
 
@@ -143,8 +166,17 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
     
     
   }
-  print("outside loop")
   return (5)
+}
+
+isAlreadyInList <- function(node, frontierList) {
+  
+  for (item in frontierList) {
+    if(node[[1]] == item[[1]] && node[[2]]==item[[2]]){
+      return (TRUE)
+    }
+  }
+  return (FALSE)
 }
 
 isInsideGame2 <- function(node, offsetX, offsetY, trafficMatrix) {
@@ -175,7 +207,9 @@ findNeighbor <-
     newY <- expandedFrontier[[2]] + offsetY
     
     ## If x == 0 then we know that we look only up/down (a bit hacky)
-
+    
+    
+    
     if (offsetX == 0) {
       newG <-
         expandedFrontier[[3]] + trafficMatrix$vroads[expandedFrontier[[1]], expandedFrontier[[2]] + edgeOffsetY]
