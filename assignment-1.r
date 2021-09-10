@@ -50,8 +50,8 @@ nextPickup <- function(trafficMatrix, carInfo, packageMatrix) {
   #distanceVector = abs((packageMatrix[, 1] - carInfo$x)) +
   #((packageMatrix[, 2] - carInfo$y))
   distanceVector[packageMatrix[, 5] != 0] = Inf
-  print(distanceVector)
-  print(packageMatrix[which.min(distanceVector), c(1, 2)])
+  #print(distanceVector)
+  #print(packageMatrix[which.min(distanceVector), c(1, 2)])
   return(packageMatrix[which.min(distanceVector), c(1, 2)])
   
   ## A-Star Algo for finding the best pickup location --> Return
