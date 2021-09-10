@@ -57,9 +57,7 @@ nextMove <- function(trafficMatrix, carInfo, packageMatrix) {
   else if(x-a == 1 && y-b == 0) {return (4)} #left
   
   else if(x-a == 0 && y-b == 0) {
-    waitCounter <- waitCounter + 1
-    print("wait")
-    print(waitCounter)
+   # print("wait")
     return (5)
     }
     
@@ -90,7 +88,6 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
 
   ## --- Loop here ---
   while (length(frontierList) != 0) {
-    #print(length(frontierList))
     ## Find best score in frontiers
     scores <- sapply(frontierList, function(item)
       (item[[5]]))
@@ -98,10 +95,15 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
     
     ## Finding nodes that are equal in travel cost bust cheaper in manhattan cost
     potentialExpantionNode <- frontierList[[best_index]]
-    for(node in frontierList) {
-      if(node[[5]] == potentialExpantionNode[[5]] && node[[3]] < potentialExpantionNode[[3]]) {
-        potentialExpantionNode <- node
+    
+    i = 1
+    while(i < length(frontierList)) {
+     # str(potentialExpantionNode)
+      if(frontierList[[i]][[5]] == potentialExpantionNode[[5]] && frontierList[[i]][[3]] < potentialExpantionNode[[3]]) {
+        potentialExpantionNode = frontierList[[i]]
+        best_index = i
       }
+      i = i + 1
     }
     
     ## Pop best node from frontierlist
@@ -109,6 +111,7 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
     frontierList <- frontierList[-best_index]
     
     #if found the dest, return first node in path
+   # str(potentialExpantionNode)
     if(expandedFrontier[[4]] == 0) {
       if(length(expandedFrontier[[6]]) < 1) return (c(carInfo$x, carInfo$y)) # Coordinates of current car
         return (expandedFrontier[[6]][[1]]) 
@@ -137,7 +140,6 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
       if(!is.null(down)) {
       frontierList <- append(frontierList, list(down))
       }
-      
     }
     
     if(isInsideGame2(expandedFrontier,-1,0,trafficMatrix)) {
