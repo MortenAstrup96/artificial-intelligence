@@ -33,42 +33,77 @@ myFunction <- function(trafficMatrix, carInfo, packageMatrix) {
 
 # Find the nearest pickup location for an undelivered package
 nextPickup <- function(trafficMatrix, carInfo, packageMatrix) {
-  distanceVector = abs((packageMatrix[, 1] - carInfo$x)) +
-    ((packageMatrix[, 2] - carInfo$y))
+  distanceVector <- c()
+  i <- 1
+  while (i <= length(packageMatrix[, 1])) {
+    #firstpack
+    node <-
+      calcAstar(
+        carInfo = carInfo,
+        dest = c(packageMatrix[i, 1], packageMatrix[i, 2]),
+        trafficMatrix = trafficMatrix
+      )
+    distanceVector <- append(distanceVector, node[[3]])
+    i <- i + 1
+  }
+  
+  #distanceVector = abs((packageMatrix[, 1] - carInfo$x)) +
+  #((packageMatrix[, 2] - carInfo$y))
   distanceVector[packageMatrix[, 5] != 0] = Inf
+  print(distanceVector)
+  print(packageMatrix[which.min(distanceVector), c(1, 2)])
   return(packageMatrix[which.min(distanceVector), c(1, 2)])
+  
+  ## A-Star Algo for finding the best pickup location --> Return
 }
 
 # Find the move to get to carInfo$mem$goal
 nextMove <- function(trafficMatrix, carInfo, packageMatrix) {
   destination <- c(carInfo$mem$goal[1], carInfo$mem$goal[2])
-  nextCoordinates <- calcAstar(carInfo, destination, trafficMatrix)
+  goalNode <- calcAstar(carInfo, destination, trafficMatrix)
   
-  a = nextCoordinates[1]
-  b = nextCoordinates[2]
+  #check if the path is empty:
+  if (length(goalNode[[6]]) < 1) {
+    a = carInfo$x
+    b = carInfo$y
+  } # Coordinates of current car
+  else{
+    nextCoordinates <- goalNode[[6]][[1]]
+    a = nextCoordinates[1]
+    b = nextCoordinates[2]
+  }
   
   x = carInfo$x
   y = carInfo$y
   
-
-  if(x-a == 0 && y-b == -1) {return (8)} #up
-  else if(x-a == -1 && y-b == 0) {return (6)} #right
-  else if(x-a == 0 && y-b == 1) {return (2)} #down
-  else if(x-a == 1 && y-b == 0) {return (4)} #left
   
-  else if(x-a == 0 && y-b == 0) {
-   # print("wait")
+  if (x - a == 0 && y - b == -1) {
+    return (8)
+  } #up
+  else if (x - a == -1 && y - b == 0) {
+    return (6)
+  } #right
+  else if (x - a == 0 && y - b == 1) {
+    return (2)
+  } #down
+  else if (x - a == 1 && y - b == 0) {
+    return (4)
+  } #left
+  
+  else if (x - a == 0 && y - b == 0) {
+    # print("wait")
     return (5)
-    }
-    
+  }
+  
 }
 
-
+## Returns the goalNode
 calcAstar <- function(carInfo, dest, trafficMatrix) {
   # 1. fronttier queue
   frontierList <- list()
-
-  manhattan <- calcManhattanDist(carInfo$x, carInfo$y, dest[1], dest[2])
+  
+  manhattan <-
+    calcManhattanDist(carInfo$x, carInfo$y, dest[1], dest[2])
   # Step -1: put first frontier (your position) to queue
   firstNode <- list(
     x = carInfo$x,
@@ -85,7 +120,7 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
   ) # Next move (Vector in the list))
   
   frontierList <- append(frontierList, list(firstNode))
-
+  
   ## --- Loop here ---
   while (length(frontierList) != 0) {
     ## Find best score in frontiers
@@ -97,9 +132,10 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
     potentialExpantionNode <- frontierList[[best_index]]
     
     i = 1
-    while(i < length(frontierList)) {
-     # str(potentialExpantionNode)
-      if(frontierList[[i]][[5]] == potentialExpantionNode[[5]] && frontierList[[i]][[3]] < potentialExpantionNode[[3]]) {
+    while (i < length(frontierList)) {
+      # str(potentialExpantionNode)
+      if (frontierList[[i]][[5]] == potentialExpantionNode[[5]] &&
+          frontierList[[i]][[3]] < potentialExpantionNode[[3]]) {
         potentialExpantionNode = frontierList[[i]]
         best_index = i
       }
@@ -111,42 +147,65 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
     frontierList <- frontierList[-best_index]
     
     #if found the dest, return first node in path
-   # str(potentialExpantionNode)
-    if(expandedFrontier[[4]] == 0) {
-      if(length(expandedFrontier[[6]]) < 1) return (c(carInfo$x, carInfo$y)) # Coordinates of current car
-        return (expandedFrontier[[6]][[1]]) 
+    # str(potentialExpantionNode)
+    if (expandedFrontier[[4]] == 0) {
+      return (expandedFrontier)
     }
     
     
-    if(isInsideGame2(expandedFrontier,0,1,trafficMatrix)) {
+    if (isInsideGame2(expandedFrontier, 0, 1, trafficMatrix)) {
       up <-
-        findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0, 1, 0, 0,  dest)  #up
-        if(!is.null(up)) {
-          frontierList <- append(frontierList, list(up))
-        }
+        findNeighbor(expandedFrontier,
+                     trafficMatrix,
+                     frontierList,
+                     0,
+                     1,
+                     0,
+                     0,
+                     dest)  #up
+      if (!is.null(up)) {
+        frontierList <- append(frontierList, list(up))
+      }
     }
     
-    if(isInsideGame2(expandedFrontier,1,0,trafficMatrix)) {
+    if (isInsideGame2(expandedFrontier, 1, 0, trafficMatrix)) {
       right <-
-        findNeighbor(expandedFrontier, trafficMatrix, frontierList, 1, 0, 0, 0, dest)  #right
-      if(!is.null(right)) {
-      frontierList <- append(frontierList, list(right))
+        findNeighbor(expandedFrontier,
+                     trafficMatrix,
+                     frontierList,
+                     1,
+                     0,
+                     0,
+                     0,
+                     dest)  #right
+      if (!is.null(right)) {
+        frontierList <- append(frontierList, list(right))
       }
       
     }
-    if(isInsideGame2(expandedFrontier,0,-1,trafficMatrix)) {
+    if (isInsideGame2(expandedFrontier, 0,-1, trafficMatrix)) {
       down <-
-        findNeighbor(expandedFrontier, trafficMatrix, frontierList, 0,-1, 0,-1, dest) #down
-      if(!is.null(down)) {
-      frontierList <- append(frontierList, list(down))
+        findNeighbor(expandedFrontier,
+                     trafficMatrix,
+                     frontierList,
+                     0,-1,
+                     0,-1,
+                     dest) #down
+      if (!is.null(down)) {
+        frontierList <- append(frontierList, list(down))
       }
     }
     
-    if(isInsideGame2(expandedFrontier,-1,0,trafficMatrix)) {
+    if (isInsideGame2(expandedFrontier,-1, 0, trafficMatrix)) {
       left <-
-        findNeighbor(expandedFrontier, trafficMatrix, frontierList,-1, 0,-1, 0, dest) #left
-      if(!is.null(left)) {
-      frontierList <- append(frontierList, list(left))
+        findNeighbor(expandedFrontier,
+                     trafficMatrix,
+                     frontierList,-1,
+                     0,-1,
+                     0,
+                     dest) #left
+      if (!is.null(left)) {
+        frontierList <- append(frontierList, list(left))
       }
     }
     
@@ -157,8 +216,9 @@ calcAstar <- function(carInfo, dest, trafficMatrix) {
 
 isInsideGame2 <- function(node, offsetX, offsetY, trafficMatrix) {
   dim <- NCOL(trafficMatrix$hroads)
-  if ((node[[1]]+offsetX > 0 &&
-       node[[1]]+offsetX <= dim) && (node[[2]]+offsetY > 0 && node[[2]]+offsetY <= dim)) {
+  if ((node[[1]] + offsetX > 0 &&
+       node[[1]] + offsetX <= dim) &&
+      (node[[2]] + offsetY > 0 && node[[2]] + offsetY <= dim)) {
     return (TRUE)
   }
   return (FALSE)
@@ -166,7 +226,7 @@ isInsideGame2 <- function(node, offsetX, offsetY, trafficMatrix) {
 
 ## To optimise: Create a table with all manhattan distances at start of program
 calcManhattanDist <- function(a, b, x, y) {
-  return(abs(x-a)+abs(y-b))
+  return(abs(x - a) + abs(y - b))
 }
 
 
@@ -178,14 +238,13 @@ findNeighbor <-
            offsetY,
            edgeOffsetX,
            edgeOffsetY,
-           dest
-           ) {
+           dest) {
     newX <- expandedFrontier[[1]] + offsetX
     newY <- expandedFrontier[[2]] + offsetY
     
     ## Check if this neighbor is already in frontierList - Return null if it is
-    for(item in frontierList) {
-      if((newX == item[[1]]) && (newY == item[[2]])) {
+    for (item in frontierList) {
+      if ((newX == item[[1]]) && (newY == item[[2]])) {
         return (NULL)
       }
     }
