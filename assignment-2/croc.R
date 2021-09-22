@@ -1,11 +1,18 @@
 myFunction = function(moveInfo, readings, positions, edges, probs) {
-    print("test")
-  
+
   #Initial state probability for each node
-  #prob_vector <- moveInfo$mem
+  if(moveInfo$mem$status == 0) {
+    prob_vector <- initialize(positions)
+    
+    #Append new vector to mem with probabilities
+    moveInfo$mem[["probs"]] <- prob_vector
+  }
+  str(moveInfo)
+  #print(moveInfo$mem)
   
-  if(moveInfo$mem$status == 0) {prob_vector <- initialize(positions)}
-  print(prob_vector)
+  
+  
+  
   
 }
 
