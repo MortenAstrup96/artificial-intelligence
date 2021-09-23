@@ -10,10 +10,33 @@ myFunction = function(moveInfo,
     #Append new vector to mem with probabilities
     moveInfo$mem[["probs"]] <- prob_vector
     
-    initialize_transmatrix(edges)
+    transition_matrix = initialize_transmatrix(edges)
+    
+  }
+  emission_vector = calculate_emission_vector(readings, probs)
+  
+  prob_vector = moveInfo$mem$probs
+  new_prob_vector = rep(0, 40)
+  
+  
+  for(i in 1:40) {
+    sum = 0
+    for(j in 1:nrow(transition_matrix)) {
+      sum = sum + (prob_vector[[j]] * transition_matrix[[j,i]])
+    }
+    result = sum * emission_vector[[i]]
+    new_prob_vector[[i]] = result
   }
   
-  calculate_emission_vector(readings, probs)
+  moveInfo$mem$probs = new_prob_vector
+  
+  goalNode = which.max(new_prob_vector)
+  
+  ## Calculate shortest path
+  moveInfo$moves = c(1, 2)
+  
+
+  return(moveInfo)
 }
 
 calculate_emission_vector = function(readings, probs) {
@@ -29,11 +52,13 @@ calculate_emission_vector = function(readings, probs) {
     nitrogen_mean = probs$nitrogen[[i, 1]]
     nitrogen_std = probs$nitrogen[[i, 2]]
     
-    result = dnorm(readings[[1]], salinity_mean, salinity_std) * dnorm(readings[[2]], phosphate_mean, phosphate_std) * dnorm(readings[[3]], nitrogen_mean, nitrogen_std)
+    result =  dnorm(readings[[1]], salinity_mean, salinity_std) * 
+              dnorm(readings[[2]], phosphate_mean, phosphate_std) * 
+              dnorm(readings[[3]], nitrogen_mean, nitrogen_std)
     
     emission_vector[i] = result
   }
-  print(emission_vector)
+  return (emission_vector)
 }
 
 #######################
