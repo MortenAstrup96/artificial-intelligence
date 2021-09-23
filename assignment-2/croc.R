@@ -32,6 +32,9 @@ myFunction = function(moveInfo,
   
   goalNode = which.max(new_prob_vector)
   
+  G <- as.undirected(graph.adjacency(edges, weighted = F))
+  shortestPath = shortest_paths(G,5)
+  
   ## Calculate shortest path
   moveInfo$moves = c(1, 2)
   
