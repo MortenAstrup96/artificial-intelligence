@@ -32,7 +32,6 @@ myFunction = function(moveInfo,
   
   goalNode = which.max(new_prob_vector)
   
-  G <- as.undirected(graph.adjacency(edges, weighted = F))
   shortestPath = shortest_paths(G,5)
   
   ## Calculate shortest path
@@ -40,6 +39,10 @@ myFunction = function(moveInfo,
   
 
   return(moveInfo)
+}
+
+get_shortest_path = function(start, end, edges) {
+  
 }
 
 calculate_emission_vector = function(readings, probs) {
