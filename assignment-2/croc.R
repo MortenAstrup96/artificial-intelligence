@@ -32,16 +32,37 @@ myFunction = function(moveInfo,
   
   goalNode = which.max(new_prob_vector)
   
-  shortestPath = shortest_paths(G,5)
-  
+
   ## Calculate shortest path
   moveInfo$moves = c(1, 2)
   
-
+  make_graph(transition_matrix)
   return(moveInfo)
 }
 
+make_graph = function(transition_matrix) {
+  graph = list()
+  
+  for (i in 1:ncol(transition_matrix)) {
+    neighbour_vec = c()
+    for (j in 1:ncol(transition_matrix)) {
+      if(transition_matrix[j,i]!=0) {
+        neighbour_vec = append(neighbour_vec,j) 
+      }
+    }
+    graph[[i]] = neighbour_vec
+  }
+  
+  str(graph)
+  
+  return(graph)
+}
+
 get_shortest_path = function(start, end, edges) {
+
+  
+  
+  
   
 }
 
