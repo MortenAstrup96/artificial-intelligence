@@ -1,4 +1,3 @@
-profvis({
 myFunction = function(moveInfo,
                       readings,
                       positions,
@@ -24,50 +23,60 @@ myFunction = function(moveInfo,
   
   # Goal node is the node with highest probability in vector
   goalNode = which.max(moveInfo$mem$probs)
-
+  
   ## Calculate shortest path
   moveInfo$moves = c(1, 2)
   
   graph = make_graph(transition_matrix)
   
-  shortest = get_shortest_path(graph, positions[[3]], goalNode)
+  shortest = get_shortest_path(positions[[3]], goalNode, graph)
   
-  #print("Found shortest")
-  #print(shortest)
+  print("Found shortest")
+  print(shortest)
   
   ## If we are standing on the spot
   if(length(shortest) == 1) {
-    moveInfo$moves = c(0, 0)
+    moveInfo$moves = c(0, 0,)
     
-  ## If we predict croc is next to our current node
+    ## If we predict croc is next to our current node
   } else if(length(shortest) == 2) {
     moveInfo$moves = c(shortest[[2]], 0)
-  
-  ## We will move towards croc
+    
+    ## We will move towards croc
   } else {
     moveInfo$moves = c(shortest[[2]], shortest[[3]])  
   }
-  #print(moveInfo$moves)
+  print(moveInfo$moves)
   return(moveInfo)
 }
 
-get_shortest_path = function(graph, start, goal) {
+# Inspired from https://www.r-bloggers.com/2020/10/finding-the-shortest-path-with-dijkstras-algorithm/
+get_shortest_path = function(start, end, graph) {
+  queue = c()
+  visited = rep(FALSE, 40)
+  dist = rep(Inf, 40)
+  pred = rep(-1, 40)
   
-    explored = c()
-    queue = c(start)
+  visited[[start]] = TRUE
+  dist[[start]] = 0
+  queue[[1]] = start
+  
+  while(length(queue) > 0) {
+    u = queue[[1]]
+    queue = queue[-1]
     
-    if(start == goal) return(start)
-    
-    while(length(queue) > 0) {
-      path = queue[1]
-      queue = queue[-1]
-      
-      node = path[length(path)]
-      
-      if(!(node %in% explored)) {
-        neighbors = graph[node]
-      }
+    print(graph)
+    for(i in graph[[u]]) {
+      #print(i)
     }
+  }
+}
+
+path_length <- function(path) {
+  # if path is NULL return infinite length
+  if (is.null(path)) return(Inf)
+  # print(length(path))
+  return(length(path))
 }
 
 
@@ -145,8 +154,8 @@ calculate_emission_vector = function(readings, probs) {
     nitrogen_std = probs$nitrogen[[i, 2]]
     
     result =  dnorm(readings[[1]], salinity_mean, salinity_std) * 
-              dnorm(readings[[2]], phosphate_mean, phosphate_std) * 
-              dnorm(readings[[3]], nitrogen_mean, nitrogen_std)
+      dnorm(readings[[2]], phosphate_mean, phosphate_std) * 
+      dnorm(readings[[3]], nitrogen_mean, nitrogen_std)
     
     emission_vector[i] = result
   }
@@ -190,4 +199,3 @@ calculate_transmatrix = function(edges) {
   
   return(trans_matrix)
 }
-})
