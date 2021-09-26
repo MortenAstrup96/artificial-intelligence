@@ -27,16 +27,65 @@ myFunction = function(moveInfo,
   ## Calculate shortest path
   moveInfo$moves = c(1, 2)
   
-  make_graph(transition_matrix)
+  graph = make_graph(transition_matrix)
+  
+  shortest = get_shortest_path(positions[[3]], goalNode, graph)
+  #shortest = get_shortest_path(1, 12, graph)
+  print("Found shortest")
+  print(shortest)
+  if(length(shortest) == 1) {
+    moveInfo$moves = c(0, 0,)
+  } else if(length(shortest) == 2) {
+    moveInfo$moves = c(shortest[[2]], 0)
+  } else {
+    moveInfo$moves = c(shortest[[2]], shortest[[3]])  
+  }
+  print(moveInfo$moves)
   return(moveInfo)
 }
 
+# Inspired from https://www.r-bloggers.com/2020/10/finding-the-shortest-path-with-dijkstras-algorithm/
+get_shortest_path = function(start, end, graph, path = c()) {
+ # if(length(path) < 4) {
+#    print(path)
+#  }
+  if(is.null(graph[[start]])) return(NULL)
+  path = c(path, start)
+  
+  # If we are already on the correct spot
+  if(start == end) {
+    return (path)
+  }
+
+  shortest = NULL
+  #print(graph[[start]])
+  for(node in graph[[start]]) {
+    if(!(node %in% path)) {
+
+      newPath = get_shortest_path(node, end, graph, path)
+
+        if(path_length(newPath) < path_length(shortest)) {
+         # print(newPath)
+          shortest = newPath
+        }
+      }
+  }
+  return (shortest)
+}
+
+path_length <- function(path) {
+  # if path is NULL return infinite length
+  if (is.null(path)) return(Inf)
+ # print(length(path))
+  return(length(path))
+}
+
+
+# Calculates every round all edges, but removes the connections between swede positions
 calculate_modified_edges = function(edges, positions) {
   isSwedeOneAlive = !is.na(positions[[1]])
   isSwedeTwoAlive = !is.na(positions[[2]])
   
-  
-  print(isSwedeOneAlive)
   modified_edges = edges
   for(i in 1:2) {
     for (j in 1:nrow(modified_edges)) {
@@ -90,13 +139,7 @@ make_graph = function(transition_matrix) {
   return(graph)
 }
 
-get_shortest_path = function(start, end, edges) {
 
-  
-  
-  
-  
-}
 
 calculate_emission_vector = function(readings, probs) {
   emission_vector = rep(0, 40)
