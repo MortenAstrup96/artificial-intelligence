@@ -23,34 +23,27 @@ myFunction = function(moveInfo,
   
   # Goal node is the node with highest probability in vector
   goalNode = which.max(moveInfo$mem$probs)
-  
-  ## Calculate shortest path
-  moveInfo$moves = c(1, 2)
-  
+
   graph = make_graph(transition_matrix)
   
   shortest = get_shortest_path(positions[[3]], goalNode, graph)
   
-  print("Found shortest")
-  print(shortest)
-  
   ## If we are standing on the spot
-  if(length(shortest) == 1) {
-    moveInfo$moves = c(0, 0,)
+  if(length(shortest) == 0) {
+    moveInfo$moves = c(0, 0)
     
     ## If we predict croc is next to our current node
-  } else if(length(shortest) == 2) {
-    moveInfo$moves = c(shortest[[2]], 0)
+  } else if(length(shortest) == 1) {
+    moveInfo$moves = c(shortest[[1]], 0)
     
     ## We will move towards croc
   } else {
-    moveInfo$moves = c(shortest[[2]], shortest[[3]])  
+    moveInfo$moves = c(shortest[[1]], shortest[[2]])  
   }
-  print(moveInfo$moves)
   return(moveInfo)
 }
 
-# Inspired from https://www.r-bloggers.com/2020/10/finding-the-shortest-path-with-dijkstras-algorithm/
+# Inspired from https://www.geeksforgeeks.org/shortest-path-unweighted-graph/
 get_shortest_path = function(start, end, graph) {
   queue = c()
   visited = rep(FALSE, 40)
@@ -65,11 +58,31 @@ get_shortest_path = function(start, end, graph) {
     u = queue[[1]]
     queue = queue[-1]
     
-    print(graph)
     for(i in graph[[u]]) {
-      #print(i)
+      if(visited[[i]] == FALSE) {
+        visited[[i]] = TRUE
+        dist[[i]] = dist[[u]] + 1
+        pred[[i]] = u
+        queue = append(queue, i)
+        
+        ## Start backtracking
+        if(i == end) {
+          path = c()
+          crawl = i
+          path = append(path, crawl)
+          
+          while(pred[crawl] != -1) {
+            path = append(path, crawl)
+            crawl = pred[[crawl]]
+          }
+          path = path[-1]
+          path = rev(path)
+          return(path)
+        }
+      }
     }
   }
+  return (1)
 }
 
 path_length <- function(path) {
@@ -129,7 +142,7 @@ make_graph = function(transition_matrix) {
   for (i in 1:ncol(transition_matrix)) {
     neighbour_vec = c()
     for (j in 1:ncol(transition_matrix)) {
-      if(transition_matrix[j,i]!=0) {
+      if(transition_matrix[j,i]!=0 && j != i) {
         neighbour_vec = append(neighbour_vec,j) 
       }
     }
