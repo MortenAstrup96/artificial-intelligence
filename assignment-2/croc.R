@@ -9,14 +9,13 @@ myFunction = function(moveInfo,
     
     #Append new vector to mem with probabilities
     moveInfo$mem[["probs"]] <- prob_vector
-    moveInfo$mem[["isSwedeAlive"]] = c(T, T)
   }
   
   # Calculate emission matrix based on readings / probs
   emission_vector = calculate_emission_vector(readings, probs)
   
   # Calculate temporary edges matrix with swedes positions removed
-  modified_edges = calculate_modified_edges(edges, moveInfo$mem[["isSwedeAlive"]], positions)
+  modified_edges = calculate_modified_edges(edges, positions)
   transition_matrix = calculate_transmatrix(modified_edges)
   
   # Calculate new probability vector based on previous readings (HMM)
@@ -25,7 +24,6 @@ myFunction = function(moveInfo,
   # Goal node is the node with highest probability in vector
   goalNode = which.max(moveInfo$mem$probs)
 
-  print(goalNode)
   ## Calculate shortest path
   moveInfo$moves = c(1, 2)
   
@@ -33,11 +31,16 @@ myFunction = function(moveInfo,
   return(moveInfo)
 }
 
-calculate_modified_edges = function(edges, isSwedeAlive, positions) {
+calculate_modified_edges = function(edges, positions) {
+  isSwedeOneAlive = !is.na(positions[[1]])
+  isSwedeTwoAlive = !is.na(positions[[2]])
+  
+  
+  print(isSwedeOneAlive)
   modified_edges = edges
   for(i in 1:2) {
     for (j in 1:nrow(modified_edges)) {
-      if((isSwedeAlive[[1]] && modified_edges[[j, i]] == positions[[1]]) || (isSwedeAlive[[2]] && modified_edges[[j, i]] == positions[[2]])) {
+      if((isSwedeOneAlive && modified_edges[[j, i]] == positions[[1]]) || (isSwedeTwoAlive && modified_edges[[j, i]] == positions[[2]])) {
         modified_edges[j,] = Inf
       }
     }
