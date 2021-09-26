@@ -1,3 +1,4 @@
+profvis({
 myFunction = function(moveInfo,
                       readings,
                       positions,
@@ -206,3 +207,4 @@ calculate_transmatrix = function(edges) {
   
   return(trans_matrix)
 }
+})
