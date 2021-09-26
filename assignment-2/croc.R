@@ -9,15 +9,29 @@ myFunction = function(moveInfo,
     
     #Append new vector to mem with probabilities
     moveInfo$mem[["probs"]] <- prob_vector
+    moveInfo$mem[["isSwedeAlive"]] = c(T, T)
     
     transition_matrix = initialize_transmatrix(edges)
     
   }
+  # Calculate emission matrix based on readings / probs
   emission_vector = calculate_emission_vector(readings, probs)
   
-  prob_vector = moveInfo$mem$probs
-  new_prob_vector = rep(0, 40)
+  # Calculate new probability vector based on previous readings (HMM)
+  moveInfo$mem$probs = calculate_probability_vector(transition_matrix, moveInfo$mem$probs, emission_vector)
   
+  # Goal node is the node with highest probability in vector
+  goalNode = which.max(moveInfo$mem$probs)
+
+  ## Calculate shortest path
+  moveInfo$moves = c(1, 2)
+  
+  make_graph(transition_matrix)
+  return(moveInfo)
+}
+
+calculate_probability_vector = function(transition_matrix, prob_vector, emission_vector) {
+  new_prob_vector = rep(0, 40)
   
   for(i in 1:40) {
     sum = 0
@@ -28,16 +42,7 @@ myFunction = function(moveInfo,
     new_prob_vector[[i]] = result
   }
   
-  moveInfo$mem$probs = new_prob_vector
-  
-  goalNode = which.max(new_prob_vector)
-  
-
-  ## Calculate shortest path
-  moveInfo$moves = c(1, 2)
-  
-  make_graph(transition_matrix)
-  return(moveInfo)
+  return (new_prob_vector)
 }
 
 make_graph = function(transition_matrix) {
