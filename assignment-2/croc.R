@@ -10,12 +10,14 @@ myFunction = function(moveInfo,
     #Append new vector to mem with probabilities
     moveInfo$mem[["probs"]] <- prob_vector
     moveInfo$mem[["isSwedeAlive"]] = c(T, T)
-    
-    transition_matrix = initialize_transmatrix(edges)
-    
   }
+  
   # Calculate emission matrix based on readings / probs
   emission_vector = calculate_emission_vector(readings, probs)
+  
+  # Calculate temporary edges matrix with swedes positions removed
+  modified_edges = calculate_modified_edges(edges, moveInfo$mem[["isSwedeAlive"]], positions)
+  transition_matrix = calculate_transmatrix(modified_edges)
   
   # Calculate new probability vector based on previous readings (HMM)
   moveInfo$mem$probs = calculate_probability_vector(transition_matrix, moveInfo$mem$probs, emission_vector)
@@ -23,6 +25,7 @@ myFunction = function(moveInfo,
   # Goal node is the node with highest probability in vector
   goalNode = which.max(moveInfo$mem$probs)
 
+  print(goalNode)
   ## Calculate shortest path
   moveInfo$moves = c(1, 2)
   
@@ -30,15 +33,39 @@ myFunction = function(moveInfo,
   return(moveInfo)
 }
 
+calculate_modified_edges = function(edges, isSwedeAlive, positions) {
+  modified_edges = edges
+  for(i in 1:2) {
+    for (j in 1:nrow(modified_edges)) {
+      if((isSwedeAlive[[1]] && modified_edges[[j, i]] == positions[[1]]) || (isSwedeAlive[[2]] && modified_edges[[j, i]] == positions[[2]])) {
+        modified_edges[j,] = Inf
+      }
+    }
+  }
+  
+  for (j in nrow(modified_edges):1) {
+    if(modified_edges[j,] == Inf) {
+      modified_edges = modified_edges[-j,]
+    }
+  }
+  
+  return (modified_edges)
+}
+
 calculate_probability_vector = function(transition_matrix, prob_vector, emission_vector) {
   new_prob_vector = rep(0, 40)
   
+  # Loop through each column (each node)
   for(i in 1:40) {
     sum = 0
+    
+    # For each column (node) calculate the probabilities to go here from previous round 
+    # based on transition & emission matrix
     for(j in 1:nrow(transition_matrix)) {
       sum = sum + (prob_vector[[j]] * transition_matrix[[j,i]])
     }
     result = sum * emission_vector[[i]]
+    
     new_prob_vector[[i]] = result
   }
   
@@ -57,9 +84,6 @@ make_graph = function(transition_matrix) {
     }
     graph[[i]] = neighbour_vec
   }
-  
-  str(graph)
-  
   return(graph)
 }
 
@@ -104,7 +128,7 @@ initialize_probvector = function(pos) {
   return (prob_vector)
 }
 
-initialize_transmatrix = function(edges) {
+calculate_transmatrix = function(edges) {
   trans_matrix <- matrix(0, nrow = 40, ncol = 40)
   
   #setting 1 values for counting adjacent nodes: to be counted
