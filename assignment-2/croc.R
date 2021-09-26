@@ -30,14 +30,14 @@ myFunction = function(moveInfo,
   
   graph = make_graph(transition_matrix)
   
-  shortest = get_shortest_path(positions[[3]], goalNode, graph)
+  shortest = get_shortest_path(graph, positions[[3]], goalNode)
   
   print("Found shortest")
   print(shortest)
   
   ## If we are standing on the spot
   if(length(shortest) == 1) {
-    moveInfo$moves = c(0, 0,)
+    moveInfo$moves = c(0, 0)
     
   ## If we predict croc is next to our current node
   } else if(length(shortest) == 2) {
@@ -52,39 +52,11 @@ myFunction = function(moveInfo,
 }
 
 # Inspired from https://www.r-bloggers.com/2020/10/finding-the-shortest-path-with-dijkstras-algorithm/
-get_shortest_path = function(start, end, graph, path = c()) {
-  if(is.null(graph[[start]])) return(NULL)
-  
-  path = c(path, start)
-  
-  # If we are already on the correct spot
-  if(start == end) {
-    return (path)
-  }
-
-  shortest = NULL
-  
-  # Loop through each node connected to our current node
-  for(node in graph[[start]]) {
-    
-    ## If the node is NOT in our current path, run shortest path on it
-    if(!(node %in% path)) {
-      newPath = get_shortest_path(node, end, graph, path)
-      
-        ## If the path we just found is horter than our current, mark it as shortest
-        if(path_length(newPath) < path_length(shortest)) {
-          shortest = newPath
-        }
-      }
-  }
-  return (shortest)
-}
-
-path_length <- function(path) {
-  # if path is NULL return infinite length
-  if (is.null(path)) return(Inf)
- # print(length(path))
-  return(length(path))
+get_shortest_path = function(graph, start, goal) {
+    explored = c()
+    queue = start
+    queue = append(start, 10)
+    print(queue)
 }
 
 
