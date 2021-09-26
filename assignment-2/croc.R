@@ -32,8 +32,8 @@ myFunction = function(moveInfo,
   
   shortest = get_shortest_path(graph, positions[[3]], goalNode)
   
-  print("Found shortest")
-  print(shortest)
+  #print("Found shortest")
+  #print(shortest)
   
   ## If we are standing on the spot
   if(length(shortest) == 1) {
@@ -47,16 +47,27 @@ myFunction = function(moveInfo,
   } else {
     moveInfo$moves = c(shortest[[2]], shortest[[3]])  
   }
-  print(moveInfo$moves)
+  #print(moveInfo$moves)
   return(moveInfo)
 }
 
-# Inspired from https://www.r-bloggers.com/2020/10/finding-the-shortest-path-with-dijkstras-algorithm/
 get_shortest_path = function(graph, start, goal) {
+  
     explored = c()
-    queue = start
-    queue = append(start, 10)
-    print(queue)
+    queue = c(start)
+    
+    if(start == goal) return(start)
+    
+    while(length(queue) > 0) {
+      path = queue[1]
+      queue = queue[-1]
+      
+      node = path[length(path)]
+      
+      if(!(node %in% explored)) {
+        print("Hello!")
+      }
+    }
 }
 
 
