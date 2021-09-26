@@ -65,7 +65,7 @@ get_shortest_path = function(graph, start, goal) {
       node = path[length(path)]
       
       if(!(node %in% explored)) {
-        print("Hello!")
+        neighbors = graph[node]
       }
     }
 }
