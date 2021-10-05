@@ -4,11 +4,13 @@ myFunction = function(moveInfo,
                       edges,
                       probs) {
   #Initial state probability for each node
-  if (moveInfo$mem$status == 0) {
+  if (moveInfo$mem$status == 0 || moveInfo$mem$status == 1) {
     prob_vector <- initialize_probvector(positions)
     
     #Append new vector to mem with probabilities
     moveInfo$mem[["probs"]] <- prob_vector
+    
+    moveInfo$mem$status = 2
   }
   
   # Calculate emission matrix based on readings / probs
@@ -28,6 +30,7 @@ myFunction = function(moveInfo,
   
   shortest = get_shortest_path(positions[[3]], goalNode, graph)
   
+  #print(shortest)
   ## If we are standing on the spot
   if(length(shortest) == 0) {
     moveInfo$moves = c(0, 0)
