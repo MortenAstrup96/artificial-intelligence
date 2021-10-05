@@ -5,6 +5,22 @@ Created on Tue Oct  8 12:20:41 2019
 @author: Mike
 """
 
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.layers import Convolution2D
+from tensorflow.keras.layers import MaxPooling2D
+from keras.utils.np_utils import to_categorical
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import Flatten
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Input
+from tensorflow.keras.models import Model
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+from tensorflow.keras.preprocessing.image import img_to_array
+from tensorflow.keras.preprocessing.image import load_img
+from tensorflow.keras.utils import to_categorical
 from keras import models
 from keras.activations import softmax
 from keras.optimizer_v1 import SGD
@@ -15,7 +31,6 @@ from keras.utils import np_utils
 from keras import backend as K
 from keras.models import Sequential
 from keras.layers import *
-
 
 # In *older* versions of Tensorflow/Keras you may need to adjust the image 
 # dimension ordering. Read about channel ordering here:
@@ -51,7 +66,7 @@ def runImageClassification(getModel=None,fitModel=None,seed=7):
 
     # Evaluate on test data
     print("Evaluating model...")
-    score = model.evaluate(data.x_test, data.y_test, verbose=0)
+    score = model.evaluate(data.x_test, data.y_test, verbose=1)
     print('Test accuracy:', score[1])
 
 # This is the class that wraps the CIFAR data. You will probably need to be connected to the
@@ -148,28 +163,33 @@ def myGetModel(data):
     # model.compile
     #return compiled Keras CNN model
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
+    model.add(Convolution2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
     model.add(Dropout(0.25))
-    model.add(Conv2D(32, (3, 3), activation='relu'))
-    model.add(MaxPooling2D((2, 2)))
-    model.add(Dropout(0.25))
-    model.add(Conv2D(64, (3, 3), activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Conv2D(64, (3, 3), activation='relu'))
-    model.add(MaxPooling2D((2, 2)))
-    model.add(Dropout(0.25))
+    model.add(MaxPooling2D(pool_size = (2, 2)))
     model.add(Flatten())
-    model.add(Dense(10, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Activation('softmax'))
-    model.compile(optimizer=SGD(lr=0.1, decay=1e-6))
+    model.add(Dense(1024, activation='relu'))
+    model.add(Dense(512, activation='relu'))
+    model.add(Dense(10, activation='softmax'))
+    model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics=['accuracy'])
     model.summary()
 
     return model
 
 def myFitModel(model, data: CIFAR):
-    history = model.fit(data.x_train, data.y_train, epochs=1, validation_data=(data.x_valid, data.y_valid))    
-    return history
+    hist = model.fit(data.x_train, data.y_train, epochs=1, validation_data=(data.x_valid, data.y_valid))
+    model.save("C:/Projects/artificial-intelligence/assignment-4/models/mask_detector.model", save_format="h5")
+
+    print(model.summary())
+
+    plt.plot(hist.history['accuracy'])
+    plt.plot(hist.history['val_accuracy'])
+    plt.title('Model Accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Val'], loc='upper right')
+    plt.show()
+
+    return model
 
 
 if __name__ == "__main__":
