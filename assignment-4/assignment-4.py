@@ -162,22 +162,30 @@ def myGetModel(data):
     # Specify used optimizer + parameters & learning rate
     # model.compile
     #return compiled Keras CNN model
+
+    ## -- Kernel size: How many pixels do we minimum need to recognize the object?
+    ## -- 
     model = Sequential()
-    model.add(Convolution2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
+    model.add(Convolution2D(16, (3, 3), activation='relu', input_shape=(32, 32, 3)))
+    model.add(Convolution2D(16, (1, 1), activation='relu'))
+    model.add(Convolution2D(32, (7, 7), activation='relu'))
+    model.add(Convolution2D(32, (1, 1), activation='relu'))
     model.add(Dropout(0.25))
-    model.add(MaxPooling2D(pool_size = (2, 2)))
     model.add(Flatten())
-    model.add(Dense(1024, activation='relu'))
-    model.add(Dense(512, activation='relu'))
+    model.add(Dense(256, activation='relu'))
     model.add(Dense(10, activation='softmax'))
-    model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics=['accuracy'])
     model.summary()
 
     return model
 
 def myFitModel(model, data: CIFAR):
-    hist = model.fit(data.x_train, data.y_train, epochs=1, validation_data=(data.x_valid, data.y_valid))
-    model.save("C:/Projects/artificial-intelligence/assignment-4/models/mask_detector.model", save_format="h5")
+    # Early Stopping
+    callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=10, restore_best_weights=True)
+
+
+    hist = model.fit(data.x_train, data.y_train, batch_size=16, steps_per_epoch=400, epochs=10, validation_data=(data.x_valid, data.y_valid), callbacks=[callback])
+    model.save("C:/Projects/artificial-intelligence/assignment-4/models/model_1.model", save_format="h5")
 
     print(model.summary())
 

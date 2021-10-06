@@ -24,7 +24,7 @@ def classify(img_path):
 
     img_preprocessed = preprocess_input(img_batch)
 
-    model = tf.keras.models.load_model("C:/Projects/artificial-intelligence/assignment-4/models/model.model")
+    model = tf.keras.models.load_model("C:/Projects/artificial-intelligence/assignment-4/models/model_1.model")
     (airplane, automobile, bird, cat, deer, dog, frog, horse, ship, truck) = model.predict(img_preprocessed)[0]
     print("Airplane: ", airplane)
     print("Automobile: ", automobile)
